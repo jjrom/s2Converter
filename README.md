@@ -2,7 +2,7 @@
 
 Convert Sentinel-2 JPEG2000 Tile image into human readable RGB JPEG / TIFF image
 
-    Usage ./s2Converter/s2Converter.sh [-i] [-o] [-f] [-w] [-n] [-h]
+    Usage s2Converter.sh [-i] [-o] [-f] [-w] [-n] [-h]
 
         -i | --input S2 tile directory
         -o | --output Output directory (default current directory)
