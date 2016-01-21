@@ -139,7 +139,11 @@ fi
 if [ "${CLEAN}" == "" ]
 then
     echo " --> Clean intermediate files"
-    #rm $OUTPUT_DIRECTORY/${TILE_ID}_B0*.tif
+    rm $OUTPUT_DIRECTORY/${TILE_ID}_B0*.tif
+    if [ "${OUTPUT_FORMAT}" == "JPEG" ]
+    then
+        rm $OUTPUT_DIRECTORY/${TILE_ID}.tif
+    fi
 fi
 
 echo "Finished :)"
