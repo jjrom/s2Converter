@@ -11,12 +11,13 @@ function showUsage {
     echo ""
     echo "   Convert Sentinel-2 13 bands JPEG2000 Tile image into human readable RGB JPEG / TIFF image"
     echo ""
-    echo "   Usage $0 [-i] [-o] [-f] [-w] [-n] [-h]"
+    echo "   Usage $0 [-i] [-o] [-f] [-w] [-q] [-n] [-h]"
     echo ""
     echo "      -i | --input S2 tile directory"
     echo "      -o | --output Output directory (default current directory)"
     echo "      -f | --format Output format (i.e. GTiff or JPEG - default JPEG)"
     echo "      -w | --width Output width in pixels (Default same size as input image)"
+    echo "      -q | --quality Output quality between 1 and 100 (For JPEG output only - default is no degradation (i.e. 100))"
     echo "      -n | --no-clean Do not remove intermediate files"
     echo "      -h | --help show this help"
     echo ""
@@ -30,7 +31,7 @@ do
 	key="$1"
 	
 	case $key in
-            -i|--input)
+        -i|--input)
             INPUT_DIRECTORY="$2"
             shift # past argument
             ;;
@@ -44,6 +45,10 @@ do
             ;;
         -w|--width)
             OUTPUT_WIDTH="$2"
+            shift # past argument
+            ;;
+        -q|--quality)
+            OUTPUT_QUALITY="$2"
             shift # past argument
             ;;
             *)
@@ -95,6 +100,11 @@ then
     OUTPUT_FORMAT=JPEG
 fi
 
+if [ "${OUTPUT_QUALITY}" == "" ]
+then
+    OUTPUT_QUALITY=100
+fi
+
 # Create output directory
 mkdir -p $OUTPUT_DIRECTORY
 
@@ -128,18 +138,19 @@ gdal_translate -ot Byte -scale 200 2000 $OUTPUT_DIRECTORY/${TILE_ID}_B03.tif $OU
 gdal_translate -ot Byte -scale 200 2000 $OUTPUT_DIRECTORY/${TILE_ID}_B02.tif $OUTPUT_DIRECTORY/${TILE_ID}_B02_8bits.tif
 
 echo " --> Merge bands into one single file"
-gdal_merge.py -of GTiff -separate -o ${OUTPUT_DIRECTORY}/${TILE_ID}.tif $OUTPUT_DIRECTORY/${TILE_ID}_B04_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B03_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B02_8bits.tif
+gdal_merge.py -of GTiff -separate -o ${OUTPUT_DIRECTORY}/${TILE_ID}_uncompressed.tif $OUTPUT_DIRECTORY/${TILE_ID}_B04_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B03_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B02_8bits.tif
+gdal_translate -co COMPRESS=JPEG -co JPEG_QUALITY=${OUTPUT_QUALITY} $OUTPUT_DIRECTORY/${TILE_ID}_uncompressed.tif $OUTPUT_DIRECTORY/${TILE_ID}.tif
 
 if [ "${OUTPUT_FORMAT}" == "JPEG" ]
 then
     echo " --> Convert to JPEG"
-    gdal_translate -of JPEG ${OUTPUT_DIRECTORY}/${TILE_ID}.tif ${OUTPUT_DIRECTORY}/${TILE_ID}.jpg
+    gdal_translate -co JPEG_QUALITY=${OUTPUT_QUALITY} -of JPEG ${OUTPUT_DIRECTORY}/${TILE_ID}.tif ${OUTPUT_DIRECTORY}/${TILE_ID}.jpg
 fi
 
 if [ "${CLEAN}" == "" ]
 then
     echo " --> Clean intermediate files"
-    rm $OUTPUT_DIRECTORY/${TILE_ID}_B0*.tif
+    rm $OUTPUT_DIRECTORY/${TILE_ID}_B0*.tif $OUTPUT_DIRECTORY/${TILE_ID}_uncompressed.tif 
     if [ "${OUTPUT_FORMAT}" == "JPEG" ]
     then
         rm $OUTPUT_DIRECTORY/${TILE_ID}.tif
