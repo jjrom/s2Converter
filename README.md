@@ -9,7 +9,7 @@ Convert Sentinel-2 JPEG2000 Tile image into human readable RGB JPEG / TIFF image
         -f | --format Output format (i.e. GTiff or JPEG - default JPEG)
         -w | --width Output width in pixels (Default same size as input image)
         -q | --quality Output quality between 1 and 100 (For JPEG output only - default is no degradation (i.e. 100))
-        -n | --no-clean Do not remove intermediate files
+        -y | --ycbr Add a "PHOTOMETRIC=YCBCR" option to gdal_translate
         -h | --help show this help
 
     Note: this script requires gdal with JP2000 reading support
