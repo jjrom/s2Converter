@@ -139,9 +139,9 @@ then
 fi
 
 echo " --> Convert 16 bits to 8 bits"
-gdal_translate -ot Byte -scale 200 2000 $OUTPUT_DIRECTORY/${TILE_ID}_B04.tif $OUTPUT_DIRECTORY/${TILE_ID}_B04_8bits.tif
-gdal_translate -ot Byte -scale 200 2000 $OUTPUT_DIRECTORY/${TILE_ID}_B03.tif $OUTPUT_DIRECTORY/${TILE_ID}_B03_8bits.tif
-gdal_translate -ot Byte -scale 200 2000 $OUTPUT_DIRECTORY/${TILE_ID}_B02.tif $OUTPUT_DIRECTORY/${TILE_ID}_B02_8bits.tif
+gdalenhance -ot Byte -equalize $OUTPUT_DIRECTORY/${TILE_ID}_B04.tif $OUTPUT_DIRECTORY/${TILE_ID}_B04_8bits.tif
+gdalenhance -ot Byte -equalize $OUTPUT_DIRECTORY/${TILE_ID}_B03.tif $OUTPUT_DIRECTORY/${TILE_ID}_B03_8bits.tif
+gdalenhance -ot Byte -equalize $OUTPUT_DIRECTORY/${TILE_ID}_B02.tif $OUTPUT_DIRECTORY/${TILE_ID}_B02_8bits.tif
 
 echo " --> Merge bands into one single file"
 gdal_merge.py -of GTiff -separate -o ${OUTPUT_DIRECTORY}/${TILE_ID}_uncompressed.tif $OUTPUT_DIRECTORY/${TILE_ID}_B04_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B03_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B02_8bits.tif
@@ -156,7 +156,7 @@ fi
 if [ "${CLEAN}" == "" ]
 then
     echo " --> Clean intermediate files"
-    rm $OUTPUT_DIRECTORY/${TILE_ID}_B0*.tif $OUTPUT_DIRECTORY/${TILE_ID}_uncompressed.tif 
+    rm $OUTPUT_DIRECTORY/${TILE_ID}_B0*.tif $OUTPUT_DIRECTORY/${TILE_ID}_uncompressed.tif $OUTPUT_DIRECTORY/*.aux.xml
     if [ "${OUTPUT_FORMAT}" == "JPEG" ]
     then
         rm $OUTPUT_DIRECTORY/${TILE_ID_WITH_EXT}.tif
