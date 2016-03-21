@@ -115,6 +115,7 @@ mkdir -p $OUTPUT_DIRECTORY
 
 # Tile identifier extracted from the output directory
 TILE_ID=`basename $INPUT_DIRECTORY | rev | cut -c 8- | rev`
+TILE_ID_WITH_EXT=`basename $INPUT_DIRECTORY`
 
 # Convert each band to RGB at the right size
 echo " --> Convert JP2 band B04 (Red) to TIF"
@@ -144,12 +145,12 @@ gdal_translate -ot Byte -scale 200 2000 $OUTPUT_DIRECTORY/${TILE_ID}_B02.tif $OU
 
 echo " --> Merge bands into one single file"
 gdal_merge.py -of GTiff -separate -o ${OUTPUT_DIRECTORY}/${TILE_ID}_uncompressed.tif $OUTPUT_DIRECTORY/${TILE_ID}_B04_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B03_8bits.tif $OUTPUT_DIRECTORY/${TILE_ID}_B02_8bits.tif
-gdal_translate ${YCBR} -co COMPRESS=JPEG -co JPEG_QUALITY=${OUTPUT_QUALITY} $OUTPUT_DIRECTORY/${TILE_ID}_uncompressed.tif $OUTPUT_DIRECTORY/${TILE_ID}.tif
+gdal_translate ${YCBR} -co COMPRESS=JPEG -co JPEG_QUALITY=${OUTPUT_QUALITY} $OUTPUT_DIRECTORY/${TILE_ID}_uncompressed.tif $OUTPUT_DIRECTORY/${TILE_ID_WITH_EXT}.tif
 
 if [ "${OUTPUT_FORMAT}" == "JPEG" ]
 then
     echo " --> Convert to JPEG"
-    gdal_translate ${YCBR} -co JPEG_QUALITY=${OUTPUT_QUALITY} -of JPEG ${OUTPUT_DIRECTORY}/${TILE_ID}.tif ${OUTPUT_DIRECTORY}/${TILE_ID}.jpg
+    gdal_translate ${YCBR} -co JPEG_QUALITY=${OUTPUT_QUALITY} -of JPEG ${OUTPUT_DIRECTORY}/${TILE_ID_WITH_EXT}.tif ${OUTPUT_DIRECTORY}/${TILE_ID_WITH_EXT}.jpg
 fi
 
 if [ "${CLEAN}" == "" ]
@@ -158,9 +159,11 @@ then
     rm $OUTPUT_DIRECTORY/${TILE_ID}_B0*.tif $OUTPUT_DIRECTORY/${TILE_ID}_uncompressed.tif 
     if [ "${OUTPUT_FORMAT}" == "JPEG" ]
     then
-        rm $OUTPUT_DIRECTORY/${TILE_ID}.tif
+        rm $OUTPUT_DIRECTORY/${TILE_ID_WITH_EXT}.tif
     fi
 fi
 
 echo "Finished :)"
 echo ""
+
+
