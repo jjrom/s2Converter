@@ -24,5 +24,3 @@ Example: to make a 1000x1000 JPEG quicklook from tile S2A_OPER_MSI_L1C_TL_SGS__2
 Notes :
 
 * JPEG2000 to GeoTIFF conversion is pretty long with OpenJPEG driver. Test should be performed using other jpeg2000 drivers
-* the 16bits to 8 bits conversion use an empiric stretching with values in a range [200, 2000].
-Next version should use the histogram values from each band to have a better color rendering
