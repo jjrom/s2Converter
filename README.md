@@ -19,7 +19,7 @@ Example: to make a 1000x1000 JPEG quicklook from tile S2A_OPER_MSI_L1C_TL_SGS__2
     s2Converter.sh -w 1000 -o output -i S2A_OPER_MSI_L1C_TL_SGS__20151203T163340_A002336_T30TYN_N02.00
 
 
-![quicklook](https://raw.githubusercontent.com/jjrom/s2Converter/master/output/S2A_OPER_MSI_L1C_TL_SGS__20151203T163340_A002336_T30TYN.jpg)
+![quicklook](https://raw.githubusercontent.com/jjrom/s2Converter/master/output/S2A_OPER_MSI_L1C_TL_SGS__20151203T163340_A002336_T30TYN_N02.00.jpg)
 
 Notes :
 
