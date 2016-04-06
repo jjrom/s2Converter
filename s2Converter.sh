@@ -39,6 +39,32 @@ function showUsage {
     echo ""
 }
 
+function generateWorldFile {
+python << EOF
+import osgeo.gdal as gdal
+import osgeo.osr as osr
+import os
+import sys
+
+def generate_tfw(infile):
+    src = gdal.Open(infile)
+    xform = src.GetGeoTransform()
+    edit1=xform[0]+xform[1]/2
+    edit2=xform[3]+xform[5]/2
+    tfw = open(os.path.splitext(infile)[0] + '.tfw', 'wt')
+    tfw.write("%0.8f\n" % xform[1])
+    tfw.write("%0.8f\n" % xform[2])
+    tfw.write("%0.8f\n" % xform[4])
+    tfw.write("%0.8f\n" % xform[5])
+    tfw.write("%0.8f\n" % edit1)
+    tfw.write("%0.8f\n" % edit2)
+    tfw.close()
+
+if __name__ == '__main__':
+    generate_tfw('$1')
+EOF
+}
+
 # Parsing arguments with value
 while [[ $# > 1 ]]
 do
@@ -172,13 +198,13 @@ then
 else
     echo " --> Convert JP2 band B04 (Red) to TIF with Kakadu"
     kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B04.tif
-    python generateTFW.py ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2
+    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2
     echo " --> Convert JP2 band B03 (Green) to TIF with Kakadu"
     kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B03.tif
-    python generateTFW.py ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2
+    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2
     echo " --> Convert JP2 band B02 (Blue) to TIF with Kakadu"
     kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B02.tif
-    python generateTFW.py ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2
+    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2
     mv ${INPUT_DIRECTORY}/*.tfw ${OUTPUT_DIRECTORY}
 fi
 
