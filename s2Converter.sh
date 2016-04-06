@@ -71,6 +71,26 @@ do
 	key="$1"
     
 	case $key in
+        -i|--input)
+            INPUT_DIRECTORY="$2"
+            shift # past argument
+            ;;
+        -o|--output)
+            OUTPUT_DIRECTORY="$2"
+            shift # past argument
+            ;;
+        -f|--format)
+            OUTPUT_FORMAT="$2"
+            shift # past argument
+            ;;
+        -w|--width)
+            OUTPUT_WIDTH="$2"
+            shift # past argument
+            ;;
+        -q|--quality)
+            OUTPUT_QUALITY="$2"
+            shift # past argument
+            ;;
         -K|--use-kakadu)
             KAKADU=1
             shift # past argument
@@ -95,39 +115,11 @@ do
 	esac
 done
 
-# Parsing arguments with value
-while [[ $# > 1 ]]
-do
-	key="$1"
-	
-	case $key in
-        -i|--input)
-            INPUT_DIRECTORY="$2"
-            shift # past argument
-            ;;
-        -o|--output)
-            OUTPUT_DIRECTORY="$2"
-            shift # past argument
-            ;;
-        -f|--format)
-            OUTPUT_FORMAT="$2"
-            shift # past argument
-            ;;
-        -w|--width)
-            OUTPUT_WIDTH="$2"
-            shift # past argument
-            ;;
-        -q|--quality)
-            OUTPUT_QUALITY="$2"
-            shift # past argument
-            ;;
-            *)
-        # unknown option
-        shift # past argument
-        ;;
-	esac
-	shift # past argument or value
-done
+# Bands
+BAND_R=4
+BAND_G=3
+BAND_B=2
+BANDS=($BAND_R $BAND_G $BAND_B)
 
 if [ "${INPUT_DIRECTORY}" == "" ]
 then
@@ -165,20 +157,20 @@ then
     AWS=`echo $INPUT_DIRECTORY | awk -F\: '{print "http://sentinel-s2-l1c.s3.amazonaws.com/tiles/"$2"/0"}'`
     INPUT_DIRECTORY=from_aws
     mkdir -p ${INPUT_DIRECTORY}
-    if [ ! -f ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2 ]; then
-        wget -O ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2 ${AWS}/B04.jp2
+    if [ ! -f ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_R}.jp2 ]; then
+        wget -O ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_R}.jp2 ${AWS}/B0${BAND_R}.jp2
     else
-        echo " Use local ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2 file"
+        echo " Use local ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_R}.jp2 file"
     fi
-    if [ ! -f ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2 ]; then
-        wget -O ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2 ${AWS}/B03.jp2
+    if [ ! -f ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_G}.jp2 ]; then
+        wget -O ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_G}.jp2 ${AWS}/B0${BAND_G}.jp2
     else
-        echo " Use local ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2 file"
+        echo " Use local ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_G}.jp2 file"
     fi
-    if [ ! -f ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2 ]; then
-        wget -O ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2 ${AWS}/B02.jp2
+    if [ ! -f ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_B}.jp2 ]; then
+        wget -O ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_B}.jp2 ${AWS}/B0${BAND_B}.jp2
     else
-        echo " Use local ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2 file"
+        echo " Use local ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_B}.jp2 file"
     fi
 else
     TILE_ID=`basename $INPUT_DIRECTORY | rev | cut -c 8- | rev`
@@ -189,45 +181,39 @@ fi
 # Convert each band to RGB at the right size
 if [ "${KAKADU}" == "" ]
 then
-    echo " --> Convert JP2 band B04 (Red) to TIF with gdal"
-    gdal_translate -of GTiff ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2 ${OUTPUT_DIRECTORY}/${TILE_ID}_B04.tif
-    echo " --> Convert JP2 band B03 (Green) to TIF with gdal"
-    gdal_translate -of GTiff ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2 ${OUTPUT_DIRECTORY}/${TILE_ID}_B03.tif
-    echo " --> Convert JP2 band B02 (Blue) to TIF with gdal"
-    gdal_translate -of GTiff ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2 ${OUTPUT_DIRECTORY}/${TILE_ID}_B02.tif
+    for BAND in "${BANDS[@]}"
+    do
+        echo " --> Convert JP2 band B0${BAND} to TIF with gdal"
+        gdal_translate -of GTiff ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.jp2 ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.tif
+    done
 else
-    echo " --> Convert JP2 band B04 (Red) to TIF with Kakadu"
-    kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B04.tif
-    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B04.jp2
-    echo " --> Convert JP2 band B03 (Green) to TIF with Kakadu"
-    kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B03.tif
-    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2
-    echo " --> Convert JP2 band B02 (Blue) to TIF with Kakadu"
-    kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B02.tif
-    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2
+    for BAND in "${BANDS[@]}"
+    do
+        echo " --> Convert JP2 band B0${BAND} to TIF with Kakadu"
+        kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.tif
+        generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.jp2
+    done
     mv ${INPUT_DIRECTORY}/*.tfw ${OUTPUT_DIRECTORY}
 fi
 
 if [ "${OUTPUT_WIDTH}" != "" ]
 then
-    echo " --> Resize band B04 (Red) to $OUTPUT_WIDTH pixels width"
-    gdalwarp -ts $OUTPUT_WIDTH 0 ${OUTPUT_DIRECTORY}/${TILE_ID}_B04.tif ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B04.tif
-    mv ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B04.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B04.tif
-    echo " --> Resize band B03 (Green) to $OUTPUT_WIDTH pixels width"
-    gdalwarp -ts $OUTPUT_WIDTH 0 ${OUTPUT_DIRECTORY}/${TILE_ID}_B03.tif ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B03.tif
-    mv ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B03.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B03.tif
-    echo " --> Resize band B02 (Blue) to $OUTPUT_WIDTH pixels width"
-    gdalwarp -ts $OUTPUT_WIDTH 0 ${OUTPUT_DIRECTORY}/${TILE_ID}_B02.tif ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B02.tif
-    mv ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B02.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B02.tif
+    for BAND in "${BANDS[@]}"
+    do
+        echo " --> Resize band B0${BAND} to $OUTPUT_WIDTH pixels width"
+        gdalwarp -ts $OUTPUT_WIDTH 0 ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.tif ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B0${BAND}.tif
+        mv ${OUTPUT_DIRECTORY}/_tmp_${TILE_ID}_B0${BAND}.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.tif
+    done
 fi
 
 echo " --> Convert 16 bits to 8 bits"
-gdalenhance -ot Byte -equalize ${OUTPUT_DIRECTORY}/${TILE_ID}_B04.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B04_8bits.tif
-gdalenhance -ot Byte -equalize ${OUTPUT_DIRECTORY}/${TILE_ID}_B03.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B03_8bits.tif
-gdalenhance -ot Byte -equalize ${OUTPUT_DIRECTORY}/${TILE_ID}_B02.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B02_8bits.tif
+for BAND in "${BANDS[@]}"
+do
+    gdalenhance -ot Byte -equalize ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND}.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND}_8bits.tif
+done
 
 echo " --> Merge bands into one single file"
-gdal_merge.py -of GTiff -separate -o ${OUTPUT_DIRECTORY}/${TILE_ID}_uncompressed.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B04_8bits.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B03_8bits.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B02_8bits.tif
+gdal_merge.py -of GTiff -separate -o ${OUTPUT_DIRECTORY}/${TILE_ID}_uncompressed.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND_R}_8bits.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND_G}_8bits.tif ${OUTPUT_DIRECTORY}/${TILE_ID}_B0${BAND_B}_8bits.tif
 gdal_translate ${YCBR} -co COMPRESS=JPEG -co JPEG_QUALITY=${OUTPUT_QUALITY} ${OUTPUT_DIRECTORY}/${TILE_ID}_uncompressed.tif ${OUTPUT_DIRECTORY}/${TILE_ID_WITH_EXT}.tif
 
 if [ "${OUTPUT_FORMAT}" == "JPEG" ]
