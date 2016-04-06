@@ -26,4 +26,4 @@ Convert Sentinel-2 JPEG2000 Tile image store on Amazon S3 into human readable RG
 
     s2Converter.sh -w 1000 -o output -i S2A_OPER_MSI_L1C_TL_SGS__20151203T163340_A002336_T30TYN_N02.00
 
-![quicklook](https://raw.githubusercontent.com/jjrom/s2Converter/master/output/30_T_YN_2015_12_3.jpg)
+![quicklook](https://raw.githubusercontent.com/jjrom/s2Converter/master/output/example.jpg)
