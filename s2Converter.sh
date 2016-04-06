@@ -204,7 +204,7 @@ else
     generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2
     echo " --> Convert JP2 band B02 (Blue) to TIF with Kakadu"
     kdu_expand -i ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2 -o ${OUTPUT_DIRECTORY}/${TILE_ID}_B02.tif
-    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B03.jp2
+    generateWorldFile ${INPUT_DIRECTORY}/${TILE_ID}_B02.jp2
     mv ${INPUT_DIRECTORY}/*.tfw ${OUTPUT_DIRECTORY}
 fi
 
