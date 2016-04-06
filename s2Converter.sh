@@ -65,6 +65,36 @@ if __name__ == '__main__':
 EOF
 }
 
+# Parsing arguments without value
+while [[ $# > 0 ]]
+do
+	key="$1"
+    
+	case $key in
+        -K|--use-kakadu)
+            KAKADU=1
+            shift # past argument
+            ;;
+        -n|--no-clean)
+            CLEAN=1
+            shift # past argument
+            ;;
+        -y|--ycbr)
+            YCBR="-co PHOTOMETRIC=YCBCR"
+            shift # past argument
+            ;;
+        -h|--help)
+            showUsage
+            exit 0
+            shift # past argument
+            ;;
+            *)
+        shift # past argument
+        # unknown option
+        ;;
+	esac
+done
+
 # Parsing arguments with value
 while [[ $# > 1 ]]
 do
@@ -97,36 +127,6 @@ do
         ;;
 	esac
 	shift # past argument or value
-done
-
-# Parsing arguments without value
-while [[ $# > 0 ]]
-do
-	key="$1"
-    
-	case $key in
-        -K|--use-kakadu)
-            KAKADU=1
-            shift # past argument
-            ;;
-        -n|--no-clean)
-            CLEAN=1
-            shift # past argument
-            ;;
-        -y|--ycbr)
-            YCBR="-co PHOTOMETRIC=YCBCR"
-            shift # past argument
-            ;;
-        -h|--help)
-            showUsage
-            exit 0
-            shift # past argument
-            ;;
-            *)
-        shift # past argument
-        # unknown option
-        ;;
-	esac
 done
 
 if [ "${INPUT_DIRECTORY}" == "" ]
