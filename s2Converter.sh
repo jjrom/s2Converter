@@ -3,7 +3,7 @@
 # Convert Sentinel-2 13 bands JPEG2000 Tile image into human readable
 # RGB JPEG / TIFF image 
 #
-# Author : Jérôme Gasperi (https://github.com/jjrom)
+# Author : Jéme Gasperi (https://github.com/jjrom)
 # Date   : 2016.01.20
 #
 # Licensed under the Apache License, version 2.0 (the "License");
@@ -173,9 +173,29 @@ then
         echo " Use local ${INPUT_DIRECTORY}/${TILE_ID}_B0${BAND_B}.jp2 file"
     fi
 else
+
+#CHECK which version of S-2A file is used:
+zip_rec_pattern_old_version=S2A_OPER
+zip_rec_pattern_new_version=S2A_MSIL1C	
+TILE_ID_WITH_EXT=`basename $INPUT_DIRECTORY`
+
+IFS='_' read -ra title_string_arr <<< "$TILE_ID_WITH_EXT"
+mission_ID=${title_string_arr[0]}
+file_class=${title_string_arr[1]}
+string_regex=$mission_ID"_"$file_class
+
+if [ "$zip_rec_pattern_old_version" == $string_regex ]; then
+
     TILE_ID=`basename $INPUT_DIRECTORY | rev | cut -c 8- | rev`
-    TILE_ID_WITH_EXT=`basename $INPUT_DIRECTORY`
-    INPUT_DIRECTORY=${INPUT_DIRECTORY}/IMG_DATA
+    echo " --> Using S-2A file with old naming convention: $zip_rec_pattern_old_version*"
+else 
+    tile_list=$(find $INPUT_DIRECTORY -name *_B*.jp2)
+    TILE_ID=$(basename "$tile_list" | rev | cut -c 9- | rev)
+    echo " --> Using S-2A file with new naming convention $zip_rec_pattern_new_version*"
+fi
+
+INPUT_DIRECTORY=${INPUT_DIRECTORY}/IMG_DATA
+
 fi
 
 # Convert each band to RGB at the right size
@@ -237,6 +257,5 @@ then
 fi
 
 echo "Finished :)"
+
 echo ""
-
-
