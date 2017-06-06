@@ -3,7 +3,7 @@
 # Convert Sentinel-2 13 bands JPEG2000 Tile image into human readable
 # RGB JPEG / TIFF image 
 #
-# Author : Jéme Gasperi (https://github.com/jjrom)
+# Author : Jérôme Gasperi (https://github.com/jjrom)
 # Date   : 2016.01.20
 #
 # Licensed under the Apache License, version 2.0 (the "License");
